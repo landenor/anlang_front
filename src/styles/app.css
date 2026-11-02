@@ -1,0 +1,118 @@
+html,
+body {
+  background: var(--f7-page-bg-color, #fff);
+}
+
+/* В Material-теме стандартный отступ ссылки смещает одиночную иконку вправо. */
+.navbar a.link.icon-only {
+  padding: 0;
+  justify-content: center;
+}
+
+.app-loading {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Стили цветов темы Framework7 ещё не созданы, пока идёт bootstrap. */
+  --f7-preloader-color: #0e4fe7;
+}
+
+/* Формы входа: ограничиваем ширину на десктопе. */
+.auth-page .page-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.auth-subtitle {
+  text-align: center;
+  color: var(--f7-block-footer-text-color, #6d6d72);
+  margin-top: -12px;
+}
+
+.form-message {
+  white-space: pre-line;
+  text-align: center;
+}
+
+.form-message.error {
+  color: var(--f7-color-red, #ff3b30);
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--f7-block-footer-text-color, #6d6d72);
+  font-size: 14px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid var(--f7-list-outline-border-color, rgba(0, 0, 0, 0.2));
+}
+
+.auth-links {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.social-buttons {
+  display: grid;
+  gap: 12px;
+}
+
+/* Брендовые цвета провайдеров: текст всегда белый, иначе в тёмной Material-теме он берётся из on-primary и сливается с фоном. */
+.button.social-yandex,
+.button.social-vk {
+  --f7-button-fill-text-color: #fff;
+}
+
+.button.social-yandex {
+  --f7-button-fill-bg-color: #fc3f1d;
+  --f7-button-fill-pressed-bg-color: #e0371a;
+}
+
+.button.social-vk {
+  --f7-button-fill-bg-color: #0077ff;
+  --f7-button-fill-pressed-bg-color: #0066db;
+}
+
+/* Содержимое кнопки с прелоадером Framework7 оборачивает в span.
+   Равные боковые колонки центрируют подпись независимо от логотипа. */
+.social-button.button-preloader > span {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 22px minmax(0, 1fr) 22px;
+  column-gap: 10px;
+}
+
+.social-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.status-icon {
+  display: block;
+  text-align: center;
+  font-size: 64px;
+}
+
+.profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--f7-list-item-border-color, #ddd);
+}
