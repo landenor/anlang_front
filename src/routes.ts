@@ -7,6 +7,7 @@ import LoginPage from './pages/LoginPage.vue'
 import NotFoundPage from './pages/NotFoundPage.vue'
 import RegisterPage from './pages/RegisterPage.vue'
 import ResetPasswordPage from './pages/ResetPasswordPage.vue'
+import TranslatorPage from './pages/TranslatorPage.vue'
 
 /** `guest` — только для неавторизованных, `public` — для всех. Без отметки — только после входа. */
 export type RouteAccess = 'guest' | 'public'
@@ -17,6 +18,7 @@ export type AppRoute = Router.RouteParameters & { path: string; access?: RouteAc
 // Пути без завершающего слеша: в таком виде приходят redirect URI провайдеров и ссылки из писем.
 export const routes: AppRoute[] = [
   { path: '/', component: ProfilePage },
+  { path: '/translator', component: TranslatorPage },
   { path: '/login', component: LoginPage, access: 'guest' },
   { path: '/register', component: RegisterPage, access: 'guest' },
   { path: '/forgot-password', component: ForgotPasswordPage, access: 'public' },

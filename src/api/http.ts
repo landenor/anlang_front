@@ -65,7 +65,8 @@ export async function request<T>(path: string, { method = 'GET', body, auth = tr
 
 async function send(path: string, method: string, body: unknown, token: string | null): Promise<Response> {
   const headers: Record<string, string> = { Accept: 'application/json' }
-  if (body !== undefined) {
+  const isForm = body instanceof FormData
+  if (body !== undefined && !isForm) {
     headers['Content-Type'] = 'application/json'
   }
   if (token) {
@@ -78,7 +79,7 @@ async function send(path: string, method: string, body: unknown, token: string |
       headers,
       // Без этого браузер не сохранит и не отправит cookie refresh_token.
       credentials: 'include',
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: isForm ? body : body === undefined ? undefined : JSON.stringify(body),
     })
   } catch {
     throw new ApiError(0, 'Нет соединения с сервером. Проверьте интернет и попробуйте ещё раз')

@@ -116,3 +116,21 @@ body {
   object-fit: cover;
   background: var(--f7-list-item-border-color, #ddd);
 }
+
+/* Popup Smart Select находится вне страницы переводчика. */
+.translator-language-select .searchbar {
+  --f7-searchbar-input-bg-color: #eeeef0;
+  --f7-searchbar-input-text-color: #242428;
+  --f7-searchbar-placeholder-color: #68686f;
+  --f7-searchbar-search-icon-color: #68686f;
+  --f7-searchbar-input-clear-button-color: #68686f;
+}
+
+.dark .translator-language-select .searchbar,
+.translator-language-select.dark .searchbar {
+  --f7-searchbar-input-bg-color: #303034;
+  --f7-searchbar-input-text-color: #f2f2f4;
+  --f7-searchbar-placeholder-color: #b0b0b8;
+  --f7-searchbar-search-icon-color: #b0b0b8;
+  --f7-searchbar-input-clear-button-color: #b0b0b8;
+}

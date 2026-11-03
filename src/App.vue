@@ -18,6 +18,7 @@ const f7params = {
   name: 'AnLang',
   theme: 'auto',
   darkMode: 'auto' as const,
+  touch: { touchHighlight: false },
   // secondary доступен как color="secondary" / класс color-secondary / var(--f7-color-secondary).
   colors: { primary: '#0e4fe7', secondary: '#56e7fd' },
   // Material-палитра: насыщенный primary, нейтральные серые поверхности (поля ввода, фон) без оттенка primary.

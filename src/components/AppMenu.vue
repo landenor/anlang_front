@@ -13,9 +13,14 @@ import {
         </f7-nav-right>
       </f7-navbar>
       <f7-list strong inset>
-        <f7-list-item title="Профиль" link="/" view=".view-main" panel-close selected>
+        <f7-list-item title="Профиль" link="/" view=".view-main" panel-close>
           <template #media>
             <f7-icon f7="person" />
+          </template>
+        </f7-list-item>
+        <f7-list-item title="Переводчик" link="/translator" view=".view-main" panel-close>
+          <template #media>
+            <f7-icon f7="bubble_left_bubble_right" />
           </template>
         </f7-list-item>
       </f7-list>
