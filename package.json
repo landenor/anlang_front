@@ -9,12 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "framework7": "^9.2.0",
-    "framework7-icons": "^5.0.5",
-    "framework7-vue": "^9.2.0",
-    "path-to-regexp": "^6.3.0",
     "pinia": "^4.1.0",
-    "vue": "^3.5.44"
+    "vant": "^4.10.2",
+    "vue": "^3.5.44",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",

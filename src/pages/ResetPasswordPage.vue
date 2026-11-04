@@ -1,19 +1,23 @@
 <script setup lang="ts">
-import { f7, f7Block, f7Button, f7List, f7ListInput, f7Navbar, f7Page } from 'framework7-vue'
-import type { Router } from 'framework7/types'
+import { Button as VanButton, CellGroup as VanCellGroup, Field as VanField, NavBar as VanNavBar, Icon as VanIcon, showDialog } from 'vant'
+
+import { useRouter, useRoute } from 'vue-router'
+import { readQuery } from '../utils/routeQuery'
 import { reactive, ref } from 'vue'
 import { authApi } from '../api/auth'
 import { errorMessage } from '../api/http'
 import { useAuthStore } from '../stores/auth'
 import { validatePassword } from '../utils/validation'
 
-const props = defineProps<{ f7route: Router.Route; f7router: Router.Router }>()
+const router = useRouter()
+const route = useRoute()
+const query = readQuery(route.query)
 
 const auth = useAuthStore()
 
 // Ссылка из письма: /reset-password?userId=...&token=...
-const userId = props.f7route.query.userId
-const token = props.f7route.query.token
+const userId = query.userId
+const token = query.token
 const linkValid = Boolean(userId && token)
 
 const form = reactive({ password: '', passwordConfirm: '' })
@@ -30,11 +34,10 @@ async function submit() {
   loading.value = true
   try {
     await authApi.resetPassword({ userId, token, newPassword: form.password })
-    f7.dialog.alert('Теперь войдите с новым паролем.', 'Пароль изменён', () => {
-      // Бэкенд завершил все сессии пользователя, поэтому сбрасываем и текущую.
-      auth.clearSession()
-      props.f7router.navigate('/login', { reloadAll: true, clearPreviousHistory: true })
-    })
+    await showDialog({ title: 'Пароль изменён', message: 'Теперь войдите с новым паролем.' })
+    // Бэкенд завершил все сессии пользователя, поэтому сбрасываем и текущую.
+    auth.clearSession()
+    void router.replace('/login')
   } catch (e) {
     error.value = errorMessage(e)
   } finally {
@@ -44,47 +47,45 @@ async function submit() {
 </script>
 
 <template>
-  <f7-page class="auth-page" no-toolbar>
-    <f7-navbar title="Новый пароль" />
+  <main class="auth-page">
+    <van-nav-bar title="Новый пароль" />
 
     <div class="auth-container">
-      <f7-block v-if="!linkValid" class="text-align-center">
-        <i class="f7-icons status-icon">xmark_circle</i>
+      <section v-if="!linkValid" class="block text-align-center">
+        <van-icon name="close" class="status-icon" />
         <h2>Ссылка недействительна</h2>
         <p>Запросите новую ссылку для смены пароля.</p>
-        <f7-button fill large href="/forgot-password" :reload-all="true">Запросить ссылку</f7-button>
-      </f7-block>
+        <van-button type="primary" size="large" to="/forgot-password">Запросить ссылку</van-button>
+      </section>
 
       <form v-else @submit.prevent="submit" novalidate>
-        <f7-list strong-ios dividers-ios inset>
-          <f7-list-input
-            v-model:value="form.password"
+        <van-cell-group inset>
+          <van-field
+            v-model="form.password"
             label="Новый пароль"
             type="password"
             name="new-password"
             autocomplete="new-password"
             placeholder="Не короче 8 символов, с цифрой"
             :error-message="fieldErrors.password"
-            :error-message-force="!!fieldErrors.password"
           />
-          <f7-list-input
-            v-model:value="form.passwordConfirm"
+          <van-field
+            v-model="form.passwordConfirm"
             label="Повторите пароль"
             type="password"
             name="password-confirm"
             autocomplete="new-password"
             placeholder="Ещё раз пароль"
             :error-message="fieldErrors.passwordConfirm"
-            :error-message-force="!!fieldErrors.passwordConfirm"
           />
-        </f7-list>
+        </van-cell-group>
 
-        <f7-block v-if="error" class="form-message error">{{ error }}</f7-block>
+        <section v-if="error" class="block form-message error">{{ error }}</section>
 
-        <f7-block>
-          <f7-button type="submit" fill large :preloader="true" :loading="loading">Сохранить пароль</f7-button>
-        </f7-block>
+        <section class="block">
+          <van-button native-type="submit" type="primary" size="large" :loading="loading">Сохранить пароль</van-button>
+        </section>
       </form>
     </div>
-  </f7-page>
+  </main>
 </template>

@@ -1,136 +1,49 @@
-html,
-body {
-  background: var(--f7-page-bg-color, #fff);
-}
+@import './theme.css';
 
-/* В Material-теме стандартный отступ ссылки смещает одиночную иконку вправо. */
-.navbar a.link.icon-only {
-  padding: 0;
-  justify-content: center;
+:root:root {
+  --van-button-border-radius: 12px;
+  --van-field-label-width: 112px;
+  --van-base-font: 'Open Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --van-price-font: var(--van-base-font);
+  font-family: var(--van-base-font);
 }
-
-.app-loading {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* Стили цветов темы Framework7 ещё не созданы, пока идёт bootstrap. */
-  --f7-preloader-color: #0e4fe7;
-}
-
-/* Формы входа: ограничиваем ширину на десктопе. */
-.auth-page .page-content {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.auth-container {
-  width: 100%;
-  max-width: 420px;
-  margin: 0 auto;
-}
-
-.auth-subtitle {
-  text-align: center;
-  color: var(--f7-block-footer-text-color, #6d6d72);
-  margin-top: -12px;
-}
-
-.form-message {
-  white-space: pre-line;
-  text-align: center;
-}
-
-.form-message.error {
-  color: var(--f7-color-red, #ff3b30);
-}
-
-.auth-divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--f7-block-footer-text-color, #6d6d72);
-  font-size: 14px;
-}
-
-.auth-divider::before,
-.auth-divider::after {
-  content: '';
-  flex: 1;
-  border-top: 1px solid var(--f7-list-outline-border-color, rgba(0, 0, 0, 0.2));
-}
-
-.auth-links {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.social-buttons {
-  display: grid;
-  gap: 12px;
-}
-
-/* Брендовые цвета провайдеров: текст всегда белый, иначе в тёмной Material-теме он берётся из on-primary и сливается с фоном. */
-.button.social-yandex,
-.button.social-vk {
-  --f7-button-fill-text-color: #fff;
-}
-
-.button.social-yandex {
-  --f7-button-fill-bg-color: #fc3f1d;
-  --f7-button-fill-pressed-bg-color: #e0371a;
-}
-
-.button.social-vk {
-  --f7-button-fill-bg-color: #0077ff;
-  --f7-button-fill-pressed-bg-color: #0066db;
-}
-
-/* Содержимое кнопки с прелоадером Framework7 оборачивает в span.
-   Равные боковые колонки центрируют подпись независимо от логотипа. */
-.social-button.button-preloader > span {
-  display: grid;
-  width: 100%;
-  grid-template-columns: 22px minmax(0, 1fr) 22px;
-  column-gap: 10px;
-}
-
-.social-icon {
-  width: 22px;
-  height: 22px;
-}
-
-.status-icon {
-  display: block;
-  text-align: center;
-  font-size: 64px;
-}
-
-.profile-avatar {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  object-fit: cover;
-  background: var(--f7-list-item-border-color, #ddd);
-}
-
-/* Popup Smart Select находится вне страницы переводчика. */
-.translator-language-select .searchbar {
-  --f7-searchbar-input-bg-color: #eeeef0;
-  --f7-searchbar-input-text-color: #242428;
-  --f7-searchbar-placeholder-color: #68686f;
-  --f7-searchbar-search-icon-color: #68686f;
-  --f7-searchbar-input-clear-button-color: #68686f;
-}
-
-.dark .translator-language-select .searchbar,
-.translator-language-select.dark .searchbar {
-  --f7-searchbar-input-bg-color: #303034;
-  --f7-searchbar-input-text-color: #f2f2f4;
-  --f7-searchbar-placeholder-color: #b0b0b8;
-  --f7-searchbar-search-icon-color: #b0b0b8;
-  --f7-searchbar-input-clear-button-color: #b0b0b8;
-}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--van-background); color: var(--van-text-color); }
+a { color: var(--van-primary-color); text-decoration: none; }
+button, input, textarea, select { font: inherit; }
+button:focus-visible, a:focus-visible { outline: 3px solid var(--van-primary-color); outline-offset: 3px; }
+.app-loading { position: fixed; inset: 0; display: grid; place-items: center; }
+.app-page { min-height: 100dvh; max-width: 960px; margin: auto; padding-bottom: env(safe-area-inset-bottom); }
+.app-content { flex: 1; min-height: 0; width: 100%; max-width: 960px; margin: 0 auto; overflow-y: auto; padding-bottom: env(safe-area-inset-bottom); }
+.van-nav-bar { flex-shrink: 0; padding-top: env(safe-area-inset-top); }
+.auth-page { display: flex; flex-direction: column; min-height: 100dvh; padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+.auth-container { width: 100%; max-width: 440px; margin: auto; padding: 32px 0; }
+.auth-title { text-align: center; font-size: 38px; letter-spacing: -1px; margin: 0 16px 16px; color: var(--van-primary-color); }
+.auth-subtitle { text-align: center; color: var(--van-text-color-2); margin: 0 24px 32px; line-height: 1.5; }
+.block { margin: 20px 16px; }
+.block p { line-height: 1.6; }
+.section-title { margin: 32px 16px 16px; font-size: 14px; color: var(--van-text-color-2); font-weight: 500; }
+.form-message { white-space: pre-line; text-align: center; }
+.form-message.error, .color-red { color: var(--van-danger-color); }
+.color-green { color: var(--van-success-color); }
+.auth-divider { display: flex; align-items: center; gap: 12px; color: var(--van-text-color-2); font-size: 14px; }
+.auth-divider::before, .auth-divider::after { content: ''; flex: 1; border-top: 1px solid var(--van-border-color); }
+.auth-links { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 14px; }
+.social-buttons { display: grid; gap: 12px; }
+.social-yandex { --van-button-primary-background: #fc3f1d; --van-button-primary-border-color: #fc3f1d; }
+.social-vk { --van-button-primary-background: #0077ff; --van-button-primary-border-color: #0077ff; }
+.social-button .van-button__text { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.social-icon { width: 22px; height: 22px; flex-shrink: 0; }
+.status-icon { display: block; text-align: center; font-size: 64px; }
+.profile-avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; flex-shrink: 0; background: var(--van-background-3); }
+.menu-button { --van-nav-bar-icon-color: var(--van-white); display: flex; align-items: center; justify-content: center; padding: 8px; border: 0; background: transparent; color: var(--van-white); cursor: pointer; }
+.app-menu { width: min(85vw, 320px); height: 100%; padding-bottom: env(safe-area-inset-bottom); background: var(--van-background); }
+.app-menu .van-cell-group { margin-top: 24px; }
+.text-align-center { text-align: center; }
+.display-flex { display: flex; }
+.align-items-center { align-items: center; }
+.justify-content-center { justify-content: center; }
+.no-margin { margin: 0; }
+.margin-top { margin-top: 16px; }
+.text-color-gray { color: var(--van-text-color-2); }
+@media (max-width: 359px) { :root:root { --van-field-label-width: 88px; } }

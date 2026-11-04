@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { f7Block, f7Button, f7Link, f7List, f7ListInput, f7LoginScreenTitle, f7Page } from 'framework7-vue'
-import type { Router } from 'framework7/types'
+import { Button as VanButton, CellGroup as VanCellGroup, Field as VanField } from 'vant'
+import { RouterLink } from 'vue-router'
+
+import { useRouter } from 'vue-router'
 import { reactive, ref } from 'vue'
 import { authApi } from '../api/auth'
 import { ApiError, errorMessage } from '../api/http'
@@ -9,7 +11,7 @@ import { useAuthStore } from '../stores/auth'
 import { showToast } from '../utils/toast'
 import { validateEmail } from '../utils/validation'
 
-const props = defineProps<{ f7router: Router.Router }>()
+const router = useRouter()
 
 const auth = useAuthStore()
 
@@ -37,7 +39,7 @@ async function submit() {
   loading.value = true
   try {
     await auth.login(email.value.trim(), password.value)
-    props.f7router.navigate('/', { reloadAll: true, clearPreviousHistory: true })
+    void router.replace('/')
   } catch (e) {
     error.value = errorMessage(e)
     needsConfirmation.value = e instanceof ApiError && e.status === 403
@@ -60,53 +62,51 @@ async function resendConfirmation() {
 </script>
 
 <template>
-  <f7-page class="auth-page" no-navbar no-toolbar no-swipeback login-screen>
+  <main class="auth-page">
     <div class="auth-container">
-      <f7-login-screen-title>AnLang</f7-login-screen-title>
+      <h1 class="auth-title">AnLang</h1>
       <p class="auth-subtitle">Разговорная практика иностранных языков</p>
 
       <form @submit.prevent="submit" novalidate>
-        <f7-list strong-ios dividers-ios inset>
-          <f7-list-input
-            v-model:value="email"
+        <van-cell-group inset>
+          <van-field
+            v-model="email"
             label="Email"
             type="email"
             name="email"
             autocomplete="email"
             placeholder="you@example.com"
             :error-message="fieldErrors.email"
-            :error-message-force="!!fieldErrors.email"
           />
-          <f7-list-input
-            v-model:value="password"
+          <van-field
+            v-model="password"
             label="Пароль"
             type="password"
             name="password"
             autocomplete="current-password"
             placeholder="Ваш пароль"
             :error-message="fieldErrors.password"
-            :error-message-force="!!fieldErrors.password"
           />
-        </f7-list>
+        </van-cell-group>
 
-        <f7-block v-if="error" class="form-message error">{{ error }}</f7-block>
-        <f7-block v-if="needsConfirmation">
-          <f7-button outline :preloader="true" :loading="resending" @click="resendConfirmation">
+        <section v-if="error" class="block form-message error">{{ error }}</section>
+        <section v-if="needsConfirmation" class="block">
+          <van-button plain type="primary" :loading="resending" @click="resendConfirmation">
             Отправить письмо повторно
-          </f7-button>
-        </f7-block>
+          </van-button>
+        </section>
 
-        <f7-block>
-          <f7-button color="blue" type="submit" fill large :preloader="true" :loading="loading">Войти</f7-button>
-        </f7-block>
+        <section class="block">
+          <van-button native-type="submit" type="primary" size="large" :loading="loading">Войти</van-button>
+        </section>
       </form>
 
       <SocialLoginButtons />
 
-      <f7-block class="auth-links">
-        <f7-link href="/register">Регистрация</f7-link>
-        <f7-link href="/forgot-password">Забыли пароль?</f7-link>
-      </f7-block>
+      <section class="block auth-links" >
+        <RouterLink to="/register">Регистрация</RouterLink>
+        <RouterLink to="/forgot-password">Забыли пароль?</RouterLink>
+      </section>
     </div>
-  </f7-page>
+  </main>
 </template>

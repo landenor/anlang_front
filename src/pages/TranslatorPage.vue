@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { f7Icon, f7Link, f7List, f7ListItem, f7Navbar, f7Page, f7Preloader } from 'framework7-vue'
+import { Cell as VanCell, Loading as VanLoading, Icon as VanIcon, Popup as VanPopup, Search as VanSearch, NavBar as VanNavBar } from 'vant'
+
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { errorMessage } from '../api/http'
 import { translationApi, type Translation } from '../api/translation'
@@ -25,18 +26,16 @@ const languages = [
   { code: 'tr', name: 'Турецкий' }, { code: 'ar', name: 'Арабский' },
 ]
 const selectedLanguages = ref<[string, string]>(['ru', 'en'])
-const languageSelectParams = {
-  openIn: 'popup',
-  cssClass: 'translator-language-select',
-  pageTitle: 'Выберите язык',
-  popupCloseLinkText: 'Закрыть',
-  searchbar: true,
-  searchbarPlaceholder: 'Найти язык',
-  searchbarDisableText: 'Отмена',
-  appendSearchbarNotFound: 'Язык не найден',
-  closeOnSelect: true,
-  setValueText: false,
-} as const
+const choosingSide = ref<Speaker>(0)
+const showLanguages = ref(false)
+const search = ref('')
+const filteredLanguages = computed(() => languages.filter(language => language.name.toLocaleLowerCase('ru').includes(search.value.trim().toLocaleLowerCase('ru'))))
+function chooseLanguage(side: Speaker) {
+  if (locked.value) return
+  choosingSide.value = side
+  search.value = ''
+  showLanguages.value = true
+}
 const messages = ref<Message[]>([])
 const chat = ref<HTMLElement>()
 const sending = ref(false)
@@ -114,10 +113,6 @@ function keyUp(event: KeyboardEvent) {
   release(`key:${event.code}`)
 }
 
-function hide() {
-  visible = false
-  cancel()
-}
 function visibilityChanged() {
   if (document.hidden) cancel()
 }
@@ -126,6 +121,8 @@ onMounted(() => {
   document.addEventListener('visibilitychange', visibilityChanged)
 })
 onBeforeUnmount(() => {
+  visible = false
+  cancel()
   window.removeEventListener('blur', cancel)
   document.removeEventListener('visibilitychange', visibilityChanged)
   messages.value.forEach((message) => URL.revokeObjectURL(message.originalUrl))
@@ -133,16 +130,10 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <f7-page class="translator-page" @page:beforeout="hide" @page:beforein="visible = true">
-    <f7-navbar title="Переводчик">
-      <template #left>
-        <f7-link panel-open="#app-menu" icon-f7="line_horizontal_3" aria-label="Открыть меню" />
-      </template>
-    </f7-navbar>
-
+  <main class="translator-page">
     <div ref="chat" class="translator-chat" role="log" aria-label="Диалог двух собеседников" aria-live="polite">
       <div v-if="!messages.length" class="translator-empty">
-        <f7-icon f7="bubble_left_bubble_right" :size="48" />
+        <van-icon name="chat-o" :size="48" />
         <h2>Понимайте друг друга</h2>
         <p>Выберите язык каждого собеседника.<br />Удерживайте свою кнопку и говорите — перевод появится здесь.</p>
       </div>
@@ -161,7 +152,7 @@ onBeforeUnmount(() => {
         <template v-else>
           <audio :src="message.originalUrl" controls preload="none" aria-label="Прослушать запись" />
           <p v-if="message.error" class="translator-error" role="alert">{{ message.error }}</p>
-          <p v-else class="translator-pending"><f7-preloader :size="18" /> Распознаём и переводим…</p>
+          <p v-else class="translator-pending"><van-loading :size="18" /> Распознаём и переводим…</p>
         </template>
       </article>
     </div>
@@ -183,54 +174,56 @@ onBeforeUnmount(() => {
             @keydown="keyDown($event, side)" @keyup="keyUp" @blur="cancel"
             @contextmenu.prevent
           >
-            <f7-icon f7="mic_fill" :size="26" />
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+              <rect x="9" y="2" width="6" height="12" rx="3" />
+              <path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8" />
+            </svg>
           </button>
-          <f7-list class="translator-language" strong outline>
-            <f7-list-item
-              title="Язык"
-              :after="languageName(selectedLanguages[side])"
-              smart-select :smart-select-params="languageSelectParams" :disabled="locked"
-            >
-              <select
-                v-model="selectedLanguages[side]" :name="`language-${side}`" :disabled="locked"
-                :aria-label="`Язык собеседника ${side + 1}`"
-              >
-                <option v-for="language in languages" :key="language.code" :value="language.code">{{ language.name }}</option>
-              </select>
-            </f7-list-item>
-          </f7-list>
+          <button class="translator-language" :disabled="locked" :aria-label="`Язык собеседника ${side + 1}: ${languageName(selectedLanguages[side])}`" @click="chooseLanguage(side)">
+            <span>Язык</span><strong>{{ languageName(selectedLanguages[side]) }}</strong><van-icon name="arrow-down" />
+          </button>
         </div>
       </div>
     </div>
-  </f7-page>
+    <van-popup v-model:show="showLanguages" position="bottom" round class="language-popup" close-on-popstate>
+      <van-nav-bar title="Выберите язык" right-text="Закрыть" @click-right="showLanguages = false" />
+      <van-search v-model="search" placeholder="Найти язык" />
+      <div class="language-options">
+        <van-cell v-for="language in filteredLanguages" :key="language.code" :title="language.name" clickable :icon="selectedLanguages[choosingSide] === language.code ? 'success' : undefined" @click="selectedLanguages[choosingSide] = language.code; showLanguages = false" />
+        <p v-if="!filteredLanguages.length" class="text-align-center">Язык не найден</p>
+      </div>
+    </van-popup>
+  </main>
 </template>
 
 <style scoped>
-.translator-page :deep(.page-content) { display: flex; flex-direction: column; overflow: hidden; }
+.translator-page { display: flex; flex: 1; flex-direction: column; min-height: 0; overflow: hidden; }
 .translator-chat { flex: 1; min-height: 0; overflow-y: auto; padding: 20px 16px; overscroll-behavior: contain; }
-.translator-empty { max-width: 420px; margin: 8vh auto 0; text-align: center; color: var(--f7-block-footer-text-color); }
-.translator-empty h2 { color: var(--f7-text-color); font-size: 23px; }
+.translator-empty { max-width: 420px; margin: 8vh auto 0; text-align: center; color: var(--van-text-color-2); }
+.translator-empty h2 { color: var(--van-text-color); font-size: 23px; }
 .translator-empty p { line-height: 1.6; }
-.translator-message { box-sizing: border-box; width: fit-content; max-width: min(85%, 520px); padding: 14px; margin: 0 auto 16px 0; border-radius: 18px 18px 18px 4px; background: var(--f7-card-bg-color); border: 1px solid var(--f7-list-item-border-color, #ddd); overflow-wrap: anywhere; }
-.translator-message-right { margin-left: auto; margin-right: 0; border-radius: 18px 18px 4px 18px; border-color: var(--f7-color-primary); }
-.translator-message-meta { font-size: 12px; color: var(--f7-block-footer-text-color); }
-.translator-original { color: var(--f7-block-footer-text-color); white-space: pre-wrap; }
+.translator-message { box-sizing: border-box; width: fit-content; max-width: min(85%, 520px); padding: 14px; margin: 0 auto 16px 0; border-radius: 18px 18px 18px 4px; background: var(--van-background-2); border: 1px solid var(--van-border-color); overflow-wrap: anywhere; }
+.translator-message-right { margin-left: auto; margin-right: 0; border-radius: 18px 18px 4px 18px; border-color: var(--app-secondary-color); }
+.translator-message-meta { font-size: 12px; color: var(--van-text-color-2); }
+.translator-original { color: var(--van-text-color-2); white-space: pre-wrap; }
 .translator-translation { font-size: 18px; white-space: pre-wrap; }
 .translator-message audio { display: block; width: 100%; max-width: 320px; margin-top: 12px; }
 .translator-pending { display: flex; align-items: center; gap: 8px; }
-.translator-controls { flex-shrink: 0; padding: 8px max(16px, env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); background: var(--f7-card-bg-color); border-top: 1px solid var(--f7-list-item-border-color, #ddd); }
-.translator-status { text-align: center; font-size: 13px; margin: 4px 0 14px; color: var(--f7-block-footer-text-color); }
-.translator-error { color: var(--f7-color-red); white-space: pre-line; }
+.translator-controls { flex-shrink: 0; padding: 8px max(16px, env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); background: var(--van-background-2); border-top: 1px solid var(--van-border-color); }
+.translator-status { text-align: center; font-size: 13px; margin: 4px 0 14px; color: var(--van-text-color-2); }
+.translator-error { color: var(--van-danger-color); white-space: pre-line; }
 .translator-controls > .translator-error { text-align: center; }
 .translator-speakers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; max-width: 600px; margin: auto; }
 .translator-speaker { display: flex; align-items: center; flex-direction: column; gap: 12px; min-width: 0; }
-.translator-mic { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; width: min(80px, 100%); aspect-ratio: 1; padding: 8px; border: 0; border-radius: 50%; background: var(--translator-mic-bg, var(--f7-color-primary)); color: #fff; font: inherit; font-size: 13px; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
-.translator-speaker:nth-child(2) { --translator-mic-bg: #4c1d95; }
-.translator-mic.translator-mic-active { background: var(--f7-color-red); color: #fff; box-shadow: 0 0 0 4px color-mix(in srgb, var(--f7-color-red) 22%, transparent); }
+.translator-mic { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; width: min(80px, 100%); aspect-ratio: 1; padding: 8px; border: 0; border-radius: 50%; background: var(--translator-mic-bg, var(--van-button-primary-background)); color: var(--van-white); font: inherit; font-size: 13px; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.translator-speaker:nth-child(2) { --translator-mic-bg: var(--app-secondary-button-background); }
+.translator-mic.translator-mic-active { background: var(--app-recording-background); color: var(--van-white); box-shadow: 0 0 0 4px color-mix(in srgb, var(--van-danger-color) 22%, transparent); }
 .translator-mic:disabled { opacity: .45; cursor: default; }
-.translator-mic:focus-visible, .translator-language :deep(.item-link:focus-visible) { outline: 3px solid var(--f7-color-primary); outline-offset: 3px; }
-.translator-language { width: 100%; margin: 0; --f7-list-item-padding-horizontal: 12px; }
-.translator-language :deep(.item-inner) { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 4px; }
-.translator-language :deep(.item-title) { max-width: 100%; font-size: 11px; color: var(--f7-block-footer-text-color); }
-.translator-language :deep(.item-after) { max-width: 100%; margin-left: 0; font-size: 14px; color: var(--f7-text-color); }
+.translator-mic:focus-visible, .translator-language:focus-visible { outline: 3px solid var(--van-primary-color); outline-offset: 3px; }
+.translator-language { width: 100%; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 12px; border-radius: 12px; border: 1px solid var(--van-border-color); background: var(--van-background-2); color: var(--van-text-color); cursor: pointer; }
+.translator-language span { width: 100%; text-align: left; font-size: 11px; color: var(--van-text-color-2); }
+.translator-language strong { flex: 1; text-align: left; font-size: 14px; }
+.translator-language:disabled { opacity: .5; cursor: default; }
+.language-popup { height: min(75dvh, 600px); display: flex; flex-direction: column; }
+.language-options { overflow-y: auto; padding-bottom: env(safe-area-inset-bottom); }
 </style>

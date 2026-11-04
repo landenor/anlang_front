@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { f7Block, f7Button } from 'framework7-vue'
+import { Button as VanButton } from 'vant'
+
 import { onMounted, onUnmounted, ref } from 'vue'
 import type { Provider } from '../api/auth'
 import { enabledProviders, providerNames, startExternalLogin } from '../auth/externalAuth'
@@ -33,17 +34,14 @@ async function login(provider: Provider) {
 </script>
 
 <template>
-  <f7-block v-if="enabledProviders.length > 0">
+  <section class="block" v-if="enabledProviders.length > 0">
     <div class="auth-divider">или</div>
     <div class="social-buttons margin-top">
-      <f7-button
+      <van-button
         v-for="provider in enabledProviders"
         :key="provider"
         class="social-button"
-        :class="`social-${provider}`"
-        fill
-        large
-        :preloader="true"
+        :class="`social-${provider}`" type="primary" size="large"
         :loading="pending === provider"
         :disabled="pending !== null"
         @click="login(provider)"
@@ -52,7 +50,7 @@ async function login(provider: Provider) {
           <path fill="currentColor" fill-rule="evenodd" :d="providerIcons[provider]" />
         </svg>
         <span>Войти через {{ providerNames[provider] }}</span>
-      </f7-button>
+      </van-button>
     </div>
-  </f7-block>
+  </section>
 </template>

@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { f7Block, f7Button, f7Link, f7List, f7ListInput, f7Navbar, f7Page } from 'framework7-vue'
+import { Button as VanButton, CellGroup as VanCellGroup, Field as VanField, NavBar as VanNavBar, Icon as VanIcon } from 'vant'
+import { RouterLink } from 'vue-router'
+
 import { reactive, ref } from 'vue'
 import { authApi } from '../api/auth'
 import { errorMessage } from '../api/http'
@@ -53,31 +55,31 @@ async function resendConfirmation() {
 </script>
 
 <template>
-  <f7-page class="auth-page" no-toolbar>
-    <f7-navbar title="Регистрация" back-link="Назад" back-link-url="/login" />
+  <main class="auth-page">
+    <van-nav-bar title="Регистрация" left-text="Назад" left-arrow @click-left="$router.replace('/login')" />
 
     <div v-if="registeredEmail" class="auth-container">
-      <f7-block class="text-align-center">
-        <i class="f7-icons status-icon">envelope</i>
+      <section class="block text-align-center" >
+        <van-icon name="envelop-o" class="status-icon" />
         <h2>Проверьте почту</h2>
         <p>
           Мы отправили письмо на <b>{{ registeredEmail }}</b>. Перейдите по ссылке из него, чтобы подтвердить
           email, а затем войдите.
         </p>
-      </f7-block>
-      <f7-block>
-        <f7-button fill large href="/login" :reload-all="true">Перейти ко входу</f7-button>
-        <f7-button class="margin-top" :preloader="true" :loading="resending" @click="resendConfirmation">
+      </section>
+      <section class="block">
+        <van-button type="primary" size="large" to="/login">Перейти ко входу</van-button>
+        <van-button class="margin-top" :loading="resending" @click="resendConfirmation">
           Отправить письмо повторно
-        </f7-button>
-      </f7-block>
+        </van-button>
+      </section>
     </div>
 
     <div v-else class="auth-container">
       <form @submit.prevent="submit" novalidate>
-        <f7-list strong-ios dividers-ios inset>
-          <f7-list-input
-            v-model:value="form.displayName"
+        <van-cell-group inset>
+          <van-field
+            v-model="form.displayName"
             label="Имя"
             type="text"
             name="name"
@@ -85,52 +87,48 @@ async function resendConfirmation() {
             placeholder="Как к вам обращаться"
             :maxlength="100"
             :error-message="fieldErrors.displayName"
-            :error-message-force="!!fieldErrors.displayName"
           />
-          <f7-list-input
-            v-model:value="form.email"
+          <van-field
+            v-model="form.email"
             label="Email"
             type="email"
             name="email"
             autocomplete="email"
             placeholder="you@example.com"
             :error-message="fieldErrors.email"
-            :error-message-force="!!fieldErrors.email"
           />
-          <f7-list-input
-            v-model:value="form.password"
+          <van-field
+            v-model="form.password"
             label="Пароль"
             type="password"
             name="new-password"
             autocomplete="new-password"
             placeholder="Не короче 8 символов, с цифрой"
             :error-message="fieldErrors.password"
-            :error-message-force="!!fieldErrors.password"
           />
-          <f7-list-input
-            v-model:value="form.passwordConfirm"
+          <van-field
+            v-model="form.passwordConfirm"
             label="Повторите пароль"
             type="password"
             name="password-confirm"
             autocomplete="new-password"
             placeholder="Ещё раз пароль"
             :error-message="fieldErrors.passwordConfirm"
-            :error-message-force="!!fieldErrors.passwordConfirm"
           />
-        </f7-list>
+        </van-cell-group>
 
-        <f7-block v-if="error" class="form-message error">{{ error }}</f7-block>
+        <section v-if="error" class="block form-message error">{{ error }}</section>
 
-        <f7-block>
-          <f7-button type="submit" fill large :preloader="true" :loading="loading">Зарегистрироваться</f7-button>
-        </f7-block>
+        <section class="block">
+          <van-button native-type="submit" type="primary" size="large" :loading="loading">Зарегистрироваться</van-button>
+        </section>
       </form>
 
       <SocialLoginButtons />
 
-      <f7-block class="text-align-center">
-        Уже есть аккаунт? <f7-link href="/login" back>Войти</f7-link>
-      </f7-block>
+      <section class="block text-align-center" >
+        Уже есть аккаунт? <RouterLink to="/login">Войти</RouterLink>
+      </section>
     </div>
-  </f7-page>
+  </main>
 </template>

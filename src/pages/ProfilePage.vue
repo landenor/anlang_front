@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import {
-  f7, f7Block, f7BlockTitle, f7Button, f7Link, f7List, f7ListItem, f7Navbar, f7Page,
-} from 'framework7-vue'
+import { Button as VanButton, CellGroup as VanCellGroup, Cell as VanCell, Icon as VanIcon, showConfirmDialog } from 'vant'
+
 import { computed } from 'vue'
 import { useAuthStore } from '../stores/auth'
 
@@ -22,42 +21,32 @@ const canSetPassword = computed(() => !!auth.user && !auth.user.hasPassword && !
 
 function confirmLogout() {
   // Переход на /login сделает App.vue, когда сессия станет пустой.
-  f7.dialog.confirm('Выйти из аккаунта?', 'AnLang', () => void auth.logout())
+  void showConfirmDialog({ title: 'AnLang', message: 'Выйти из аккаунта?' }).then(() => auth.logout()).catch(() => {})
 }
 </script>
 
 <template>
-  <f7-page>
-    <f7-navbar title="Профиль">
-      <template #left>
-        <f7-link panel-open="#app-menu" icon-f7="line_horizontal_3" aria-label="Открыть меню" />
-      </template>
-    </f7-navbar>
-
+  <main class="app-content">
     <template v-if="auth.user">
-      <f7-block class="display-flex align-items-center" style="gap: 16px">
+      <section class="block display-flex align-items-center"  style="gap: 16px">
         <img v-if="auth.user.avatarUrl" :src="auth.user.avatarUrl" class="profile-avatar" alt="" />
-        <i v-else class="f7-icons profile-avatar display-flex justify-content-center align-items-center">person</i>
+        <van-icon v-else name="user-o" class="profile-avatar display-flex justify-content-center align-items-center" size="32" />
         <div>
           <h2 class="no-margin">Привет, {{ auth.user.displayName || 'друг' }}!</h2>
           <div class="text-color-gray">{{ auth.user.email ?? 'Email не указан' }}</div>
         </div>
-      </f7-block>
+      </section>
 
-      <f7-block-title>Аккаунт</f7-block-title>
-      <f7-list strong inset dividers-ios>
-        <f7-list-item title="Способы входа" :after="loginMethods.join(', ')" />
-        <f7-list-item
-          v-if="auth.user.email"
-          title="Email"
-          :after="auth.user.emailConfirmed ? 'подтверждён' : 'не подтверждён'"
-        />
-        <f7-list-item v-if="canSetPassword" link="/forgot-password" title="Задать пароль для входа по email" />
-      </f7-list>
+      <h3 class="section-title">Аккаунт</h3>
+      <van-cell-group inset>
+        <van-cell title="Способы входа" :value="loginMethods.join(', ')" />
+        <van-cell v-if="auth.user.email" title="Email" :value="auth.user.emailConfirmed ? 'подтверждён' : 'не подтверждён'" />
+        <van-cell v-if="canSetPassword" is-link to="/forgot-password" title="Задать пароль для входа по email" />
+      </van-cell-group>
 
-      <f7-block>
-        <f7-button color="red" outline @click="confirmLogout">Выйти</f7-button>
-      </f7-block>
+      <section class="block">
+        <van-button block plain type="danger" @click="confirmLogout">Выйти</van-button>
+      </section>
     </template>
-  </f7-page>
+  </main>
 </template>

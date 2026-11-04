@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { f7Block, f7Button, f7List, f7ListInput, f7Navbar, f7Page } from 'framework7-vue'
+import { Button as VanButton, CellGroup as VanCellGroup, Field as VanField, NavBar as VanNavBar, Icon as VanIcon } from 'vant'
+
 import { ref } from 'vue'
 import { authApi } from '../api/auth'
 import { errorMessage } from '../api/http'
@@ -27,43 +28,43 @@ async function submit() {
 </script>
 
 <template>
-  <f7-page class="auth-page" no-toolbar>
-    <f7-navbar title="Восстановление пароля" back-link="Назад" back-link-url="/login" />
+  <main class="auth-page">
+    <van-nav-bar title="Восстановление пароля" left-text="Назад" left-arrow @click-left="$router.replace('/login')" />
 
     <div class="auth-container">
-      <f7-block v-if="sent" class="text-align-center">
-        <i class="f7-icons status-icon">envelope</i>
+      <section v-if="sent" class="block text-align-center">
+        <van-icon name="envelop-o" class="status-icon" />
         <h2>Проверьте почту</h2>
         <!-- Бэкенд не сообщает, есть ли такой аккаунт, поэтому формулировка нейтральная. -->
         <p>
           Если аккаунт с адресом <b>{{ email.trim() }}</b> существует, мы отправили на него ссылку для смены
           пароля.
         </p>
-        <f7-button fill large href="/login" :reload-all="true">Вернуться ко входу</f7-button>
-      </f7-block>
+        <van-button type="primary" size="large" to="/login">Вернуться ко входу</van-button>
+      </section>
 
       <form v-else @submit.prevent="submit" novalidate>
-        <f7-block>
+        <section class="block">
           <p>Укажите email, и мы пришлём ссылку для смены пароля.</p>
           <p>Если вы входили только через Яндекс или VK, так же можно задать пароль для входа по email.</p>
-        </f7-block>
-        <f7-list strong-ios dividers-ios inset>
-          <f7-list-input
-            v-model:value="email"
+        </section>
+        <van-cell-group inset>
+          <van-field
+            v-model="email"
             label="Email"
             type="email"
             name="email"
             autocomplete="email"
             placeholder="you@example.com"
           />
-        </f7-list>
+        </van-cell-group>
 
-        <f7-block v-if="error" class="form-message error">{{ error }}</f7-block>
+        <section v-if="error" class="block form-message error">{{ error }}</section>
 
-        <f7-block>
-          <f7-button type="submit" fill large :preloader="true" :loading="loading">Отправить ссылку</f7-button>
-        </f7-block>
+        <section class="block">
+          <van-button native-type="submit" type="primary" size="large" :loading="loading">Отправить ссылку</van-button>
+        </section>
       </form>
     </div>
-  </f7-page>
+  </main>
 </template>

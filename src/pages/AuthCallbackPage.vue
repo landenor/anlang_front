@@ -5,39 +5,43 @@ const handledCodes = new Set<string>()
 </script>
 
 <script setup lang="ts">
-import { f7Block, f7Button, f7Navbar, f7Page, f7Preloader } from 'framework7-vue'
-import type { Router } from 'framework7/types'
+import { Button as VanButton, NavBar as VanNavBar, Loading as VanLoading, Icon as VanIcon } from 'vant'
+
+import { useRouter, useRoute } from 'vue-router'
+import { readQuery } from '../utils/routeQuery'
 import { onMounted, ref } from 'vue'
 import { errorMessage } from '../api/http'
 import { completeExternalLogin, isProvider, providerNames } from '../auth/externalAuth'
 import { useAuthStore } from '../stores/auth'
 import { showToast } from '../utils/toast'
 
-const props = defineProps<{ f7route: Router.Route; f7router: Router.Router }>()
+const router = useRouter()
+const route = useRoute()
+const query = readQuery(route.query)
 
 const auth = useAuthStore()
-const provider = props.f7route.params.provider
+const provider = String(route.params.provider ?? '')
 const title = isProvider(provider) ? `Вход через ${providerNames[provider]}` : 'Вход'
 const error = ref('')
 
 onMounted(async () => {
-  const query = { ...props.f7route.query }
-  // Убираем code из адресной строки, чтобы его не отправили повторно (состояние роутера сохраняем).
-  window.history.replaceState(window.history.state, '', window.location.pathname)
+  const callbackQuery = { ...query }
+  // Убираем code из адресной строки и состояния роутера без повторного монтирования страницы.
+  await router.replace({ path: route.path, query: {} })
 
   if (!isProvider(provider)) {
     error.value = 'Неизвестный способ входа'
     return
   }
-  const code = query.code ?? ''
+  const code = callbackQuery.code ?? ''
   if (code && handledCodes.has(code)) return
   handledCodes.add(code)
 
   try {
-    const tokens = await completeExternalLogin(provider, query)
+    const tokens = await completeExternalLogin(provider, callbackQuery)
     await auth.applyTokens(tokens)
     if (tokens.isNewUser) showToast('Добро пожаловать в AnLang!')
-    props.f7router.navigate('/', { reloadAll: true, clearPreviousHistory: true })
+    void router.replace('/')
   } catch (e) {
     error.value = errorMessage(e)
   }
@@ -45,21 +49,21 @@ onMounted(async () => {
 </script>
 
 <template>
-  <f7-page class="auth-page" no-toolbar>
-    <f7-navbar :title="title" />
+  <main class="auth-page">
+    <van-nav-bar :title="title" />
 
     <div class="auth-container">
-      <f7-block v-if="!error" class="text-align-center">
-        <f7-preloader />
+      <section v-if="!error" class="block text-align-center">
+        <van-loading />
         <p>Выполняем вход…</p>
-      </f7-block>
+      </section>
 
-      <f7-block v-else class="text-align-center">
-        <i class="f7-icons status-icon color-red">xmark_circle</i>
+      <section v-else class="block text-align-center">
+        <van-icon name="close" class="status-icon color-red" />
         <h2>Не удалось войти</h2>
         <p class="form-message">{{ error }}</p>
-        <f7-button fill large href="/login" :reload-all="true">Попробовать снова</f7-button>
-      </f7-block>
+        <van-button type="primary" size="large" to="/login">Попробовать снова</van-button>
+      </section>
     </div>
-  </f7-page>
+  </main>
 </template>

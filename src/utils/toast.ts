@@ -1,5 +1,4 @@
-import { f7 } from 'framework7-vue'
-
+import { showToast as toast } from 'vant'
 export function showToast(text: string) {
-  f7.toast.show({ text, position: 'center', closeTimeout: 2500 })
+  toast({ message: text, position: 'middle', duration: 2500 })
 }

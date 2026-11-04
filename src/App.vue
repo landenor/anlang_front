@@ -1,66 +1,32 @@
 <script setup lang="ts">
-import { f7, f7App, f7Preloader, f7View } from 'framework7-vue'
-import { ref, watch } from 'vue'
-import { guardInitialUrl, guardRoute } from './auth/guards'
-import AppMenu from './components/AppMenu.vue'
-import { routes } from './routes'
+import { onBeforeUnmount, ref, watch } from 'vue'
+import { ConfigProvider as VanConfigProvider, Loading as VanLoading } from 'vant'
+import { RouterView } from 'vue-router'
+import { router } from './routes'
 import { useAuthStore } from './stores/auth'
-
 const auth = useAuthStore()
-// Пока проверяем сессию, роутер не создаём: guard'ам маршрутов нужен уже известный статус входа.
 const ready = ref(false)
-void auth.bootstrap().then(() => {
-  guardInitialUrl()
-  ready.value = true
+const media = window.matchMedia('(prefers-color-scheme: dark)')
+const theme = ref<'light' | 'dark'>(media.matches ? 'dark' : 'light')
+
+function updateTheme() { theme.value = media.matches ? 'dark' : 'light' }
+
+media.addEventListener('change', updateTheme)
+
+onBeforeUnmount(() => media.removeEventListener('change', updateTheme))
+
+void router.isReady().then(() => { ready.value = true })
+
+watch(() => auth.isAuthenticated, (authenticated, previous) => {
+  if (previous && !authenticated) void router.replace('/login')
 })
 
-const f7params = {
-  name: 'AnLang',
-  theme: 'auto',
-  darkMode: 'auto' as const,
-  touch: { touchHighlight: false },
-  // secondary доступен как color="secondary" / класс color-secondary / var(--f7-color-secondary).
-  colors: { primary: '#0e4fe7', secondary: '#56e7fd' },
-  // Material-палитра: насыщенный primary, нейтральные серые поверхности (поля ввода, фон) без оттенка primary.
-  mdColorScheme: 'monochrome-vibrant' as const,
-  routes,
-  dialog: { buttonOk: 'OK', buttonCancel: 'Отмена' },
-}
-
-// Сессия закончилась (выход, отозванный refresh token) — уводим на страницу входа.
-watch(
-  () => auth.isAuthenticated,
-  (isAuthenticated, wasAuthenticated) => {
-    // Во время bootstrap приложение Framework7 ещё не создано.
-    const router = f7?.views.main?.router
-    if (wasAuthenticated && !isAuthenticated && router && router.currentRoute.path !== '/login') {
-      router.navigate('/login', { reloadAll: true, clearPreviousHistory: true })
-    }
-  },
-)
 </script>
-
 <template>
-  <div v-if="!ready" class="app-loading">
-    <f7-preloader :size="42" />
-  </div>
-  <f7-app v-else v-bind="f7params">
-    <AppMenu v-if="auth.isAuthenticated" />
-    <!--
-      Реальные пути вместо #! (browser-history-separator=""): на них возвращают провайдеры
-      (/auth/callback/yandex) и ведут ссылки из писем (/confirm-email?...).
-      Предзагрузка предыдущей страницы выключена: иначе на старте подгружался бы "/" со своим guard'ом.
-    -->
-    <f7-view
-      main
-      url="/"
-      browser-history
-      browser-history-separator=""
-      browser-history-initial-match
-      :browser-history-store-history="false"
-      :preload-previous-page="false"
-      :ios-swipe-back="false"
-      :routes-before-enter="guardRoute"
-    />
-  </f7-app>
+  <van-config-provider :theme="theme">
+    <div v-if="!ready" class="app-loading" role="status" aria-label="Восстанавливаем сессию"><van-loading size="42" /></div>
+    <RouterView v-else v-slot="{ Component, route }">
+      <component :is="Component" :key="route.matched.length > 1 ? route.matched[0]?.path : route.path.startsWith('/auth/callback/') ? route.path : route.fullPath" />
+    </RouterView>
+  </van-config-provider>
 </template>
